@@ -1,0 +1,104 @@
+version: "2"
+
+networks:
+  mongodb:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 192.169.0.0/24
+
+services:
+  provisioner.mongodb:
+    container_name: provisioner.mongodb
+    build: ./provisioner
+    command: -d /usr/src/app config,1.config.mongodb:27017 replica1,1.replica1.mongodb:27017 router,mongodb
+    volumes:
+      - ./provisioner:/usr/src/app
+    networks:
+      - mongodb
+
+  mongodb:
+    container_name: mongodb
+    hostname: mongodb
+    image: mongo:4
+    command: mongos --configdb config/1.config.mongodb:27017,2.config.mongodb:27017,3.config.mongodb:27017 --bind_ip 0.0.0.0
+    working_dir: /usr/src
+    ports:
+      - 27017:27017
+    depends_on:
+      - 1.config.mongodb
+      - 2.config.mongodb
+      - 3.config.mongodb
+      - 1.replica1.mongodb
+      - 2.replica1.mongodb
+      - 3.replica1.mongodb
+      - provisioner.mongodb
+    networks:
+      - mongodb
+
+  1.config.mongodb:
+    container_name: 1.config.mongodb
+    hostname: 1.config.mongodb
+    image: mongo:4
+    command: mongod --configsvr --replSet config --dbpath /data/db --port 27017 --bind_ip 0.0.0.0
+    working_dir: /usr/src
+    volumes:
+      - ./data/config/1:/data/db
+    networks:
+      - mongodb
+
+  2.config.mongodb:
+    container_name: 2.config.mongodb
+    hostname: 2.config.mongodb
+    image: mongo:4
+    command: mongod --configsvr --replSet config --dbpath /data/db --port 27017 --bind_ip 0.0.0.0
+    working_dir: /usr/src
+    volumes:
+      - ./data/config/2:/data/db
+    networks:
+      - mongodb
+
+  3.config.mongodb:
+    container_name: 3.config.mongodb
+    hostname: 3.config.mongodb
+    image: mongo:4
+    command: mongod --configsvr --replSet config --dbpath /data/db --port 27017 --bind_ip 0.0.0.0
+    working_dir: /usr/src
+    volumes:
+      - ./data/config/3:/data/db
+    networks:
+      - mongodb
+
+  1.replica1.mongodb:
+    container_name: 1.replica1.mongodb
+    hostname: 1.replica1.mongodb
+    image: mongo:4
+    command: mongod --shardsvr --replSet replica1 --dbpath /data/db --port 27017 --bind_ip 0.0.0.0
+    working_dir: /usr/src
+    volumes:
+      - ./data/replica1/1:/data/db
+    networks:
+      - mongodb
+
+  2.replica1.mongodb:
+    container_name: 2.replica1.mongodb
+    hostname: 2.replica1.mongodb
+    image: mongo:4
+    command: mongod --shardsvr --replSet replica1 --dbpath /data/db --port 27017 --bind_ip 0.0.0.0
+    working_dir: /usr/src
+    volumes:
+      - ./data/replica1/2:/data/db
+    networks:
+      - mongodb
+
+  3.replica1.mongodb:
+    container_name: 3.replica1.mongodb
+    hostname: 3.replica1.mongodb
+    image: mongo:4
+    command: mongod --shardsvr --replSet replica1 --dbpath /data/db --port 27017 --bind_ip 0.0.0.0
+    working_dir: /usr/src
+    volumes:
+      - ./data/replica1/3:/data/db
+    networks:
+      - mongodb
