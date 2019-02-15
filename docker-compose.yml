@@ -9,6 +9,14 @@ networks:
         - subnet: 192.169.0.0/24
 
 services:
+  backup.mongodb:
+    container_name: backup.mongodb
+    build: ./backup
+    volumes:
+      - ./backup:/usr/src/app
+    networks:
+      - mongodb
+
   provisioner.mongodb:
     container_name: provisioner.mongodb
     build: ./provisioner
@@ -33,7 +41,6 @@ services:
       - 1.replica1.mongodb
       - 2.replica1.mongodb
       - 3.replica1.mongodb
-      - provisioner.mongodb
     networks:
       - mongodb
 
