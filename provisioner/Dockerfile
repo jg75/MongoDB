@@ -1,4 +1,4 @@
-FROM mongo:4
+FROM mongo:3.6
 
 ENV PATH=$PATH:/usr/src/app:.
 RUN mkdir -p /usr/src/app
