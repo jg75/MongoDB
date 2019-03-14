@@ -43,6 +43,7 @@ The mongodb service will forward it's published port to host port 27017. Make su
   # Stop and remove the mongodb containers with no authentication
   docker-compose down
   ```
+You can find this and other helper scripts in the scripts directory.
 
 ### Start mongodb
   ```
