@@ -1,7 +1,7 @@
 #! /bin/bash
 
 dirname=$(dirname $0)
-retries=40
+retries=120
 sleep=5
 
 usage() {
@@ -29,9 +29,17 @@ waitfor() {
 }
 
 provision() {
-    local dir=$dirname/$(basename $1)
+    local server=$(basename $1)
+    local dir=$dirname/$server
     local host=$2
     local port=$3
+
+    if [ $server == "router" ]
+    then
+        router=$server
+        router_host=$host
+        router_port=$port
+    fi
 
     if waitfor $host $port
     then
@@ -63,6 +71,17 @@ input() {
     }'
 }
 
+create-users() {
+    local dir=$dirname/users
+    local host=$1
+    local port=$2
+
+    for file in $(find $dir -type f -name '*.js')
+    do
+        mongo --host $host --port $port admin $file
+    done
+}
+
 while getopts "hd:r:s:" opt "$@"
 do
     case $opt in
@@ -81,7 +100,11 @@ shift $((OPTIND-1))
 
 while [ $# -gt 0 ]
 do
-    input $1
     provision $(input $1)
     shift
 done
+
+create-users $router_host $router_port
+openssl rand -base64 756 > $dirname/../keys/keyfile
+chmod 400 $dirname/../keys/keyfile
+

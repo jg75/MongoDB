@@ -9,11 +9,13 @@ networks:
         - subnet: 192.169.0.0/24
 
 services:
-  backup.mongodb:
-    container_name: backup.mongodb
-    build: ./backup
+  provisioner.mongodb:
+    container_name: provisioner.mongodb
+    build: ./provisioner
+    command: -d /usr/src/app config,1.config.mongodb:27017 replica1,1.replica1.mongodb:27017 router,mongodb
     volumes:
-      - ./backup:/usr/src/app
+      - ./provisioner:/usr/src/app
+      - ./data/keys:/usr/src/keys
     networks:
       - mongodb
 
@@ -21,7 +23,7 @@ services:
     container_name: mongodb
     hostname: mongodb
     image: mongo:3.6
-    command: mongos -f /data/etc/mongo-secure.conf
+    command: mongos -f /data/etc/mongo.conf
     working_dir: /usr/src
     volumes:
       - ./data/router/etc:/data/etc
@@ -42,7 +44,7 @@ services:
     container_name: 1.config.mongodb
     hostname: 1.config.mongodb
     image: mongo:3.6
-    command: mongod -f /data/etc/mongo-secure.conf
+    command: mongod -f /data/etc/mongo.conf
     working_dir: /usr/src
     volumes:
       - ./data/config/1:/data/db
@@ -55,7 +57,7 @@ services:
     container_name: 2.config.mongodb
     hostname: 2.config.mongodb
     image: mongo:3.6
-    command: mongod -f /data/etc/mongo-secure.conf
+    command: mongod -f /data/etc/mongo.conf
     working_dir: /usr/src
     volumes:
       - ./data/config/2:/data/db
@@ -68,7 +70,7 @@ services:
     container_name: 3.config.mongodb
     hostname: 3.config.mongodb
     image: mongo:3.6
-    command: mongod -f /data/etc/mongo-secure.conf
+    command: mongod -f /data/etc/mongo.conf
     working_dir: /usr/src
     volumes:
       - ./data/config/3:/data/db
@@ -81,7 +83,7 @@ services:
     container_name: 1.replica1.mongodb
     hostname: 1.replica1.mongodb
     image: mongo:3.6
-    command: mongod -f /data/etc/mongo-secure.conf
+    command: mongod -f /data/etc/mongo.conf
     working_dir: /usr/src
     volumes:
       - ./data/replica1/1:/data/db
@@ -94,7 +96,7 @@ services:
     container_name: 2.replica1.mongodb
     hostname: 2.replica1.mongodb
     image: mongo:3.6
-    command: mongod -f /data/etc/mongo-secure.conf
+    command: mongod -f /data/etc/mongo.conf
     working_dir: /usr/src
     volumes:
       - ./data/replica1/2:/data/db
@@ -107,7 +109,7 @@ services:
     container_name: 3.replica1.mongodb
     hostname: 3.replica1.mongodb
     image: mongo:3.6
-    command: mongod -f /data/etc/mongo-secure.conf
+    command: mongod -f /data/etc/mongo.conf
     working_dir: /usr/src
     volumes:
       - ./data/replica1/3:/data/db
